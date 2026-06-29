@@ -2,3 +2,7 @@ state/tasks/*.tmp.*
 state/_local/
 __pycache__/
 .worktrees/
+node_modules/
+dist/
+.env.local
+.env.*.local
