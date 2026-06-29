@@ -67,16 +67,17 @@ prompts/ flags/       # 任务模板与特性开关
 - 新增 flag 时:在代码里用类型安全的 key,并在 PR 描述里写明 flag 名与灰度计划。
 - 不要删旧 flag 而不清理其分支逻辑。
 
-## 部署与回滚(agent 应知道,但不要自己触发 prod)
-- 合并到 `main` 后由六阶段流水线自动部署(见 `.github/workflows/deploy.yml`)。
-- prod 启用熔断回滚:指标恶化自动回退。agent 不应手动操作 prod。
+## 部署(harness 不内置)
+- **部署高度项目特定(AWS/Vercel/k8s/Cloud Run 各不同),harness 不提供部署 workflow**,由各项目自行配置或交管理端。
+- agent 不应手动操作 prod;合并后的部署由各项目自己的流水线负责。
 
 ## 给实现 agent 的工作约定
-1. **先出计划与风险,再写码。** 列出你识别到的失败模式、安全边界、可能的技术债。
-2. 不扩大范围;任务模板(`prompts/architect-task.md`)第 3 节之外的需求,先问架构师。
-3. 自带测试,确保本仓的集成/测试命令(见"本地开发"节)通过。
-4. 开 PR 时在描述里列出权衡点,并指出需要人类重点看的"战略风险"。
-5. 复用 docs-repo 的 `contracts/`(经 `docs/` submodule),不要在仓内复制跨服务类型。
+1. **分支纪律(BLOCK 级):禁止直接 commit/push 到 `main`。** 任何改动必须:新建分支 → 提交 → 开 PR → 过门禁(ci-gate/ai-review-gate + 人工评审)→ 合并。
+2. **先出计划与风险,再写码。** 列出你识别到的失败模式、安全边界、可能的技术债。
+3. 不扩大范围;任务模板(`prompts/architect-task.md`)第 3 节之外的需求,先问架构师。
+4. 自带测试,确保本仓的集成/测试命令(见"本地开发"节)通过。
+5. 开 PR 时在描述里列出权衡点,并指出需要人类重点看的"战略风险"。
+6. 复用 docs-repo 的 `contracts/`(经 `docs/` submodule),不要在仓内复制跨服务类型。
 
 ## 给 triage agent 的工作约定
 - 错误来源:可观测后端(CloudWatch / Prometheus 等)+ Sentry。
