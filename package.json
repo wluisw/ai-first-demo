@@ -1,0 +1,15 @@
+{
+  "name": "ai-first-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-First 前端示例应用 — 在 AI-First harness 约束下开发前端的范例",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm --filter @app/web dev",
+    "build": "pnpm --filter @app/web build",
+    "preview": "pnpm --filter @app/web preview",
+    "test": "pnpm --filter @app/web test",
+    "typecheck": "pnpm --filter @app/web typecheck",
+    "lint": "pnpm --filter @app/web lint"
+  }
+}

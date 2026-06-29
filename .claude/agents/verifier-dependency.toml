@@ -1,0 +1,12 @@
+name = "verifier-dependency"
+description = "PR 评审第 3 趟:依赖供应链——可疑包、已知 CVE、版本冲突、许可证。形态简单、可靠规则,便宜模型即可。"
+# 推荐档:Anthropic Haiku / OpenAI gpt-4o-mini / DeepSeek deepseek-chat / Qwen qwen-turbo / Kimi moonshot-v1-8k
+provider = "anthropic"
+model = "claude-haiku-4-5-20251001"
+reasoning = "low"
+tools = ["Read", "Grep"]
+prompt_file = "prompts/review-dependency.md"
+
+[budget]
+max_input_tokens = 20000
+max_output_tokens = 2000

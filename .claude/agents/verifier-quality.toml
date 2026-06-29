@@ -1,0 +1,12 @@
+name = "verifier-quality"
+description = "PR 评审第 1 趟:逻辑错误、性能、可维护性。不评论风格偏好。只对真正影响正确性/性能/可维护性的问题给 BLOCK。"
+# 推荐档:Anthropic Sonnet / OpenAI gpt-4o / DeepSeek deepseek-chat / Qwen qwen-plus
+provider = "anthropic"
+model = "claude-sonnet-4-6"
+reasoning = "medium"
+tools = ["Read", "Grep", "Glob"]
+prompt_file = "prompts/review-quality.md"
+
+[budget]
+max_input_tokens = 40000
+max_output_tokens = 4000

@@ -1,0 +1,13 @@
+name = "verifier-security"
+description = "PR 评审第 2 趟:注入、认证边界、机密泄露、不安全默认。错一次代价最大,所以用各厂商最强档。任何可能让攻击者越过认证或拿到机密的问题一律 BLOCK,不接受『内部用』辩解。"
+# 推荐档:Anthropic Opus / OpenAI gpt-4o (或 o1) / DeepSeek deepseek-reasoner / Qwen qwen-max / GLM glm-4-plus / Kimi moonshot-v1-128k
+# 这一档是省钱不能省的地方,务必用厂商旗舰模型
+provider = "anthropic"
+model = "claude-opus-4-6"
+reasoning = "high"
+tools = ["Read", "Grep", "Glob"]
+prompt_file = "prompts/review-security.md"
+
+[budget]
+max_input_tokens = 40000
+max_output_tokens = 4000

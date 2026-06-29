@@ -1,0 +1,16 @@
+name = "explorer"
+description = "只读探查 monorepo,定位与任务相关的文件、函数、最近变更。不写、不改、不部署。"
+# v2.1: provider 与 model 都可被 env 覆盖(LLM_PROVIDER / LLM_MODEL_EXPLORER)
+# 推荐档:Anthropic Haiku / OpenAI gpt-4o-mini / DeepSeek deepseek-chat / Qwen qwen-turbo / Kimi moonshot-v1-8k
+provider = "anthropic"
+model = "claude-haiku-4-5-20251001"
+reasoning = "low"
+tools = ["Read", "Grep", "Glob"]
+max_iterations = 8
+# 典型用法:architect-task-writer 与 pr-investigator 调用,先把"相关文件清单"
+# 喂给后续的 implementer 或 verifier,避免它们用强模型做廉价工作。
+
+[budget]
+# 单次调用预算上限(粗估)。超出由 goal_loop 强制停。
+max_input_tokens = 20000
+max_output_tokens = 2000

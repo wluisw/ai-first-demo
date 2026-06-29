@@ -1,0 +1,12 @@
+name = "triage-scorer"
+description = "对一个错误簇按九维严重度打分,严格依据 triage-severity-scorer skill 的锚点。被 triage_engine.py 大量调用——务必稳定、可解释、不发挥。"
+# 推荐档:Anthropic Sonnet / OpenAI gpt-4o-mini / DeepSeek deepseek-chat / Qwen qwen-plus / GLM glm-4-air
+provider = "anthropic"
+model = "claude-sonnet-4-6"
+reasoning = "medium"
+tools = ["Read"]
+required_skills = ["triage-severity-scorer"]
+
+[budget]
+max_input_tokens = 15000
+max_output_tokens = 1500

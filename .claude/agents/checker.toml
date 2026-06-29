@@ -1,0 +1,13 @@
+name = "checker"
+description = "goal_loop 的 done 判定:给定任务 + 当前状态 + 停止条件,返回 done|continue|stuck。绝不能由 implementer 自己当 checker——这是整个回路最重要的分工。"
+# 推荐档:与 implementer **必须不同**(可以同厂商不同模型、也可以跨厂商,关键是别让自己评自己)
+# 若 implementer 用 Sonnet,checker 可用 Haiku/gpt-4o-mini/qwen-plus 等;反过来也行
+provider = "anthropic"
+model = "claude-sonnet-4-6"
+reasoning = "medium"
+tools = ["Read", "Bash"]            # Bash 用来跑测试/读 CI 状态等"客观信号"
+verification_only = true            # 不允许写 / 不允许调用其他 agent
+
+[budget]
+max_input_tokens = 20000
+max_output_tokens = 1000
