@@ -14,7 +14,7 @@
 
 ## 这个仓库是什么
 本仓是 **AI-First 前端示例应用(`ai-first-demo`)**:一个用 **Vite + React 18 + TypeScript** 构建的
-单页 Web 应用,演示在 AI-First harness(特性开关、AI 评审、triage 自愈、goal loop)约束下如何
+单页 Web 应用demo,演示在 AI-First harness(特性开关、AI 评审、triage 自愈、goal loop)约束下如何
 开发前端。在多仓体系中,本仓是**前端仓**,与后端服务仓并列;前后端**共享同一个 docs-repo**
 (`https://github.com/wluisw/ai-frist-doc.git`,经 git submodule 挂到 `docs/`),接口契约、数据模型、
 总体架构都以 docs-repo 为唯一事实来源,**不在本仓复制**。
