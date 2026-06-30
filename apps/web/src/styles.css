@@ -18,8 +18,8 @@
 /* ── Enhanced dark theme (toggled via DARK_THEME_ENHANCED flag) ── */
 .theme-dark {
   --color-bg: #000000;
-  --color-surface: #0d0d14;
-  --color-border: #1a1a2e;
+  --color-surface: #12121f;
+  --color-border: #2a2a4a;
   --color-text: #f0f0ff;
   --color-muted: #6060a0;
   --color-accent: #9d8fff;

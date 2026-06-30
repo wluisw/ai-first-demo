@@ -30,9 +30,10 @@ const PILLARS: Pillar[] = [
 export function App() {
   const showMetrics = isEnabled(FLAGS.LIVE_METRICS_PANEL);
   const darkEnhanced = isEnabled(FLAGS.DARK_THEME_ENHANCED);
+  const pageClassName = darkEnhanced ? 'page theme-dark' : 'page';
 
   return (
-    <div className={darkEnhanced ? 'page theme-dark' : 'page'}>
+    <div className={pageClassName}>
       <Hero />
 
       <main className="container">
