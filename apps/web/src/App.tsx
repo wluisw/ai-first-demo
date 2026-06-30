@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { FLAGS, isEnabled } from './lib/flags';
 import { Hero } from './components/Hero';
 import { PillarCard, type Pillar } from './components/PillarCard';
@@ -30,10 +31,14 @@ const PILLARS: Pillar[] = [
 export function App() {
   const showMetrics = isEnabled(FLAGS.LIVE_METRICS_PANEL);
   const darkEnhanced = isEnabled(FLAGS.DARK_THEME_ENHANCED);
-  const pageClassName = darkEnhanced ? 'page theme-dark' : 'page';
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-dark', darkEnhanced);
+    return () => { document.documentElement.classList.remove('theme-dark'); };
+  }, [darkEnhanced]);
 
   return (
-    <div className={pageClassName}>
+    <div className="page">
       <Hero />
 
       <main className="container">
