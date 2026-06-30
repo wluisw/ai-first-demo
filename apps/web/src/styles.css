@@ -17,17 +17,17 @@
 
 /* ── Enhanced dark theme (toggled via DARK_THEME_ENHANCED flag) ── */
 .theme-dark {
-  --color-bg: #000000;
-  --color-surface: #12121f;
-  --color-border: #2a2a4a;
-  --color-text: #f0f0ff;
-  --color-muted: #6060a0;
-  --color-accent: #9d8fff;
-  --color-accent-dim: rgba(157, 143, 255, 0.12);
-  --color-accent-glow: rgba(157, 143, 255, 0.35);
-  --color-up: #2dd4bf;
-  --color-down: #fb7185;
-  --card-glow: 0 0 0 1px rgba(157,143,255,0.18), 0 4px 24px rgba(0,0,0,0.6);
+  --color-bg: #14141f;
+  --color-surface: #1e1e30;
+  --color-border: #3a3a5c;
+  --color-text: #f5f5ff;
+  --color-muted: #9494c4;
+  --color-accent: #b0a4ff;
+  --color-accent-dim: rgba(176, 164, 255, 0.16);
+  --color-accent-glow: rgba(176, 164, 255, 0.45);
+  --color-up: #4ee6cf;
+  --color-down: #ff8a9c;
+  --card-glow: 0 0 0 1px rgba(176,164,255,0.22), 0 4px 24px rgba(0,0,0,0.5);
 }
 
 html { font-size: 16px; scroll-behavior: smooth; }
@@ -177,7 +177,7 @@ main.container { padding-top: 3rem; padding-bottom: 3rem; display: flex; flex-di
 }
 .card:hover { border-color: rgba(124,106,247,0.4); }
 .theme-dark .card {
-  background: rgba(13, 13, 20, 0.8);
+  background: rgba(30, 30, 48, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(157,143,255,0.12);
@@ -206,7 +206,7 @@ main.container { padding-top: 3rem; padding-bottom: 3rem; display: flex; flex-di
   gap: 0.25rem;
 }
 .theme-dark .metric {
-  background: rgba(13, 13, 20, 0.8);
+  background: rgba(30, 30, 48, 0.8);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(157,143,255,0.1);
