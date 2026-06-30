@@ -14,6 +14,7 @@
 /** 前端关心的 flag 子集(与后端 FLAGS 同名,值用同样的 snake_case 标识)。 */
 export const FLAGS = {
   LIVE_METRICS_PANEL: 'live_metrics_panel',
+  DARK_THEME_ENHANCED: 'dark_theme_enhanced',
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
@@ -21,6 +22,7 @@ export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
 /** 保守默认值:env 未注入时的 fail-safe 回退。 */
 const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
   [FLAGS.LIVE_METRICS_PANEL]: false,
+  [FLAGS.DARK_THEME_ENHANCED]: false,
 };
 
 /**

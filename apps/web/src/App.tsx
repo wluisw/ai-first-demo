@@ -28,11 +28,11 @@ const PILLARS: Pillar[] = [
 ];
 
 export function App() {
-  // 新功能:实时指标面板,默认藏在特性开关后(见 CLAUDE.md「特性开关(强制)」)。
   const showMetrics = isEnabled(FLAGS.LIVE_METRICS_PANEL);
+  const darkEnhanced = isEnabled(FLAGS.DARK_THEME_ENHANCED);
 
   return (
-    <div className="page">
+    <div className={darkEnhanced ? 'page theme-dark' : 'page'}>
       <Hero />
 
       <main className="container">
