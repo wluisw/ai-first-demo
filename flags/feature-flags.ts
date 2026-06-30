@@ -24,6 +24,8 @@ export const FLAGS = {
   AVATAR_LAZY_LOAD: 'avatar_lazy_load',
   // 前端 demo 的实时指标面板,默认关闭,先对团队开再灰度。
   LIVE_METRICS_PANEL: 'live_metrics_panel',
+  // 增强暗黑主题:深黑赛博朋克风格,默认关闭,对团队开放后灰度全量。
+  DARK_THEME_ENHANCED: 'dark_theme_enhanced',
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
@@ -34,6 +36,7 @@ const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
   [FLAGS.RERANK_V3]: false,
   [FLAGS.AVATAR_LAZY_LOAD]: false,
   [FLAGS.LIVE_METRICS_PANEL]: false,
+  [FLAGS.DARK_THEME_ENHANCED]: false,
 };
 
 // ============================================================================

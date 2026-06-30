@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { FLAGS, isEnabled } from './lib/flags';
 import { Hero } from './components/Hero';
 import { PillarCard, type Pillar } from './components/PillarCard';
@@ -28,8 +29,13 @@ const PILLARS: Pillar[] = [
 ];
 
 export function App() {
-  // 新功能:实时指标面板,默认藏在特性开关后(见 CLAUDE.md「特性开关(强制)」)。
   const showMetrics = isEnabled(FLAGS.LIVE_METRICS_PANEL);
+  const darkEnhanced = isEnabled(FLAGS.DARK_THEME_ENHANCED);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-dark', darkEnhanced);
+    return () => { document.documentElement.classList.remove('theme-dark'); };
+  }, [darkEnhanced]);
 
   return (
     <div className="page">

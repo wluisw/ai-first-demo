@@ -124,8 +124,9 @@ jobs:
   # ---------------------------------------------------------------------------
   integration:
     needs: [node-quality, go-quality, python-quality]
-    # always() 让本 job 在上游被 skip(无相关变更)时仍能运行
-    if: always() && !contains(needs.*.result, 'failure')
+    # 前端项目无 docker-compose.ci.yml / make test-integration,禁用本 job。
+    # 全栈项目改回:if: always() && !contains(needs.*.result, 'failure')
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -161,7 +162,9 @@ jobs:
   # ---------------------------------------------------------------------------
   e2e:
     needs: [integration, docker-build]
-    if: always() && !contains(needs.*.result, 'failure')
+    # 前端 e2e 依赖 docker-compose.ci.yml 全栈,前端 demo 暂无,禁用。
+    # 要纯前端 E2E 可改成不依赖 docker-compose 的 playwright 并改回 if。
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -186,6 +189,8 @@ jobs:
   # 环境一致性检查:dev/prod 配置不漂移、必需的 secrets/env key 齐全
   # ---------------------------------------------------------------------------
   env-parity:
+    # 前端项目无 config/.env.*.example,禁用本 job。全栈项目删掉本行启用。
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
