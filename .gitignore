@@ -4,5 +4,6 @@ __pycache__/
 .worktrees/
 node_modules/
 dist/
+*.tsbuildinfo
 .env.local
 .env.*.local
