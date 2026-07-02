@@ -8,7 +8,7 @@
 ## TC-001: 开关开启时切换主题(happy path)
 **前置条件:** `THEME_TOGGLE` flag 开启
 **操作步骤:**
-1. 打开 web 首页
+1. 先打开 web 首页
 2. 点右上角主题切换按钮
 
 **预期结果:** 主题在亮/暗间翻转;`<html>` class 同步;偏好写入 localStorage;发出 `theme_toggled` 遥测事件
