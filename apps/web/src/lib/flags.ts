@@ -15,6 +15,7 @@
 export const FLAGS = {
   LIVE_METRICS_PANEL: 'live_metrics_panel',
   DARK_THEME_ENHANCED: 'dark_theme_enhanced',
+  THEME_TOGGLE: 'theme_toggle',
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
@@ -23,6 +24,7 @@ export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
 const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
   [FLAGS.LIVE_METRICS_PANEL]: false,
   [FLAGS.DARK_THEME_ENHANCED]: false,
+  [FLAGS.THEME_TOGGLE]: false,
 };
 
 /**

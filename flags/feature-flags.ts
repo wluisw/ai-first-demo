@@ -26,6 +26,8 @@ export const FLAGS = {
   LIVE_METRICS_PANEL: 'live_metrics_panel',
   // 增强暗黑主题:深黑赛博朋克风格,默认关闭,对团队开放后灰度全量。
   DARK_THEME_ENHANCED: 'dark_theme_enhanced',
+  // 用户可手动切换亮/暗主题的开关按钮,默认关闭,先对团队开再灰度。
+  THEME_TOGGLE: 'theme_toggle',
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
@@ -37,6 +39,7 @@ const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
   [FLAGS.AVATAR_LAZY_LOAD]: false,
   [FLAGS.LIVE_METRICS_PANEL]: false,
   [FLAGS.DARK_THEME_ENHANCED]: false,
+  [FLAGS.THEME_TOGGLE]: false,
 };
 
 // ============================================================================

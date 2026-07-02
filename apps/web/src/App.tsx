@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
 import { FLAGS, isEnabled } from './lib/flags';
+import { useTheme } from './lib/theme';
 import { Hero } from './components/Hero';
 import { PillarCard, type Pillar } from './components/PillarCard';
 import { MetricsPanel } from './components/MetricsPanel';
+import { ThemeToggle } from './components/ThemeToggle';
 
 /** AI-First harness 的四大支柱,作为首页内容。 */
 const PILLARS: Pillar[] = [
@@ -31,14 +32,12 @@ const PILLARS: Pillar[] = [
 export function App() {
   const showMetrics = isEnabled(FLAGS.LIVE_METRICS_PANEL);
   const darkEnhanced = isEnabled(FLAGS.DARK_THEME_ENHANCED);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('theme-dark', darkEnhanced);
-    return () => { document.documentElement.classList.remove('theme-dark'); };
-  }, [darkEnhanced]);
+  const themeToggle = isEnabled(FLAGS.THEME_TOGGLE);
+  const { isDark, toggle } = useTheme(darkEnhanced, themeToggle);
 
   return (
     <div className="page">
+      {themeToggle && <ThemeToggle isDark={isDark} onToggle={toggle} />}
       <Hero />
 
       <main className="container">
