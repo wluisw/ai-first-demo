@@ -1,23 +1,20 @@
 # =============================================================================
-# CI 门禁 (Verify CI) — 六阶段流水线的第 1 阶段
+# CI 门禁 (Verify CI) — PR 合并门禁
 # -----------------------------------------------------------------------------
 # 原则:每个 PR 都必须过这道门。没有任何 job 可选,没有人工绕过。
 #       流水线是确定性的,所以 agent 能预测结果、能推理失败。
 #
-# 适配:多语言 monorepo(TS/Node、Go/Java、Python)。各语言 job 用 paths 过滤,
-#       只有相关代码变更时才跑——既快又不漏。
-#
-# 工具可替换:GitHub Actions → GitLab CI / Azure DevOps;Playwright → Cypress 等。
+# 本仓适配(单仓多项目):前端 apps/web(pnpm)+ 后端 services/(Go)。
+#   各语言 job 用 paths 过滤,只有相关代码变更时才跑——既快又不漏。
+#   go 版本从 services/go.mod 读(不硬编码),保证 CI == 本地。
 # =============================================================================
 name: CI (Verify)
 
 on:
   pull_request:
     branches: [main]
-  # 也允许在 merge queue 中触发(配合 GitHub Merge Queue / Graphite)
   merge_group:
 
-# 同一 PR 新 push 自动取消旧运行,省 runner、出结果快
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -26,41 +23,34 @@ permissions:
   contents: read
 
 jobs:
-  # ---------------------------------------------------------------------------
   # 检测哪些部分发生了变更,后续 job 据此决定是否运行
-  # ---------------------------------------------------------------------------
   changes:
     runs-on: ubuntu-latest
     outputs:
-      node: ${{ steps.filter.outputs.node }}
+      web: ${{ steps.filter.outputs.web }}
       go: ${{ steps.filter.outputs.go }}
-      python: ${{ steps.filter.outputs.python }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            node:
-              - 'apps/**/*.{ts,tsx,js,jsx}'
-              - 'packages/**'
+            web:
+              - 'apps/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
             go:
               - 'services/**/*.go'
-              - 'go.mod'
-              - 'go.sum'
-            python:
-              - 'services/**/*.py'
-              - 'pyproject.toml'
-              - 'requirements*.txt'
+              - 'services/go.mod'
+              - 'services/go.sum'
+              - 'services/Makefile'
+              - 'services/.golangci.yml'
 
-  # ---------------------------------------------------------------------------
-  # TypeScript / Node:类型检查 + lint + 单测
-  # ---------------------------------------------------------------------------
-  node-quality:
+  # 前端:类型检查 + lint + 单测(pnpm workspace)
+  web-quality:
     needs: changes
-    if: needs.changes.outputs.node == 'true'
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,16 +61,14 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - name: Typecheck
-        run: pnpm -r typecheck      # tsc --noEmit,在每个 workspace 包
+        run: pnpm typecheck
       - name: Lint
-        run: pnpm -r lint
+        run: pnpm lint
       - name: Unit tests
-        run: pnpm -r test:unit --coverage
+        run: pnpm test
 
-  # ---------------------------------------------------------------------------
-  # Go:vet + lint + 单测(-race)
-  # ---------------------------------------------------------------------------
-  go-quality:
+  # 后端 Go:格式检查 + 编译 + 单测(= services/Makefile 的 verify,与本地一致)
+  go-verify:
     needs: changes
     if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
@@ -88,125 +76,37 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version-file: services/go.mod   # 从 go.mod 读版本,不硬编码
           cache: true
-      - run: go vet ./...
-      - uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-      - name: Unit tests
-        run: go test -race -count=1 ./...
+          cache-dependency-path: services/go.sum
+      - name: make verify (fmtcheck + build + test)
+        run: make -C services verify
 
-  # ---------------------------------------------------------------------------
-  # Python:类型检查(mypy)+ lint(ruff)+ 单测(pytest)
-  # ---------------------------------------------------------------------------
-  python-quality:
+  # 后端 Go Lint:golangci-lint(配置见 services/.golangci.yml)。
+  #   only-new-issues:只对本 PR 新增/改动代码阻断,不逼一次还清历史债。
+  go-lint:
     needs: changes
-    if: needs.changes.outputs.python == 'true'
+    if: github.event_name == 'pull_request' && needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
-      - run: pip install -r requirements-dev.txt
-      - name: Typecheck (mypy)
-        run: mypy .
-      - name: Lint (ruff)
-        run: ruff check .
-      - name: Unit tests
-        run: pytest -q --cov
-
-  # ---------------------------------------------------------------------------
-  # 集成测试:用 docker compose 起依赖,跨服务跑
-  # agent 必须能本地复现这一步(见 CLAUDE.md),否则无法自我验证
-  # ---------------------------------------------------------------------------
-  integration:
-    needs: [node-quality, go-quality, python-quality]
-    # 前端项目无 docker-compose.ci.yml / make test-integration,禁用本 job。
-    # 全栈项目改回:if: always() && !contains(needs.*.result, 'failure')
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Boot full stack
-        run: docker compose -f docker-compose.ci.yml up -d --wait
-      - name: Run integration tests
-        run: make test-integration     # 与 CLAUDE.md 中"一条命令跑集成测试"一致
-      - name: Dump logs on failure
-        if: failure()
-        run: docker compose -f docker-compose.ci.yml logs
-
-  # ---------------------------------------------------------------------------
-  # Docker 构建:保证每个服务都能成功打镜像(不推送)
-  # ---------------------------------------------------------------------------
-  docker-build:
-    needs: changes
-    if: always() && !contains(needs.*.result, 'failure')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Build all service images
-        run: |
-          for df in $(find . -name 'Dockerfile' -not -path '*/node_modules/*'); do
-            ctx=$(dirname "$df")
-            echo "::group::build $ctx"
-            docker build -t "ci/$(basename $ctx):${{ github.sha }}" "$ctx"
-            echo "::endgroup::"
-          done
-
-  # ---------------------------------------------------------------------------
-  # 端到端测试(Playwright)
-  # ---------------------------------------------------------------------------
-  e2e:
-    needs: [integration, docker-build]
-    # 前端 e2e 依赖 docker-compose.ci.yml 全栈,前端 demo 暂无,禁用。
-    # 要纯前端 E2E 可改成不依赖 docker-compose 的 playwright 并改回 if。
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+          fetch-depth: 0            # only-new-issues 需与 base 求 diff
+      - uses: actions/setup-go@v5
         with:
-          node-version: '20'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Boot stack
-        run: docker compose -f docker-compose.ci.yml up -d --wait
-      - name: E2E
-        run: pnpm exec playwright test
-      - uses: actions/upload-artifact@v4
-        if: failure()
+          go-version-file: services/go.mod
+          cache: true
+          cache-dependency-path: services/go.sum
+      - name: golangci-lint (仅新增/改动代码阻断)
+        uses: golangci/golangci-lint-action@v7
         with:
-          name: playwright-report
-          path: playwright-report/
+          version: v2.12.2
+          working-directory: services
+          only-new-issues: true
 
-  # ---------------------------------------------------------------------------
-  # 环境一致性检查:dev/prod 配置不漂移、必需的 secrets/env key 齐全
-  # ---------------------------------------------------------------------------
-  env-parity:
-    # 前端项目无 config/.env.*.example,禁用本 job。全栈项目删掉本行启用。
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Check env parity
-        # 校验 .env.dev.example / .env.prod.example 的 key 集合一致(值可不同)
-        run: python scripts/check_env_parity.py config/.env.dev.example config/.env.prod.example
-
-  # ---------------------------------------------------------------------------
-  # 汇总门禁:把它设为唯一的 required status check / merge queue 必需项。
-  # 任意上游失败 → 红。这样不必在分支保护里逐个勾选 job。
-  # ---------------------------------------------------------------------------
+  # 汇总门禁:设为唯一的 required status check。任意上游失败 → 红。
   ci-gate:
-    needs: [node-quality, go-quality, python-quality, integration, docker-build, e2e, env-parity]
+    needs: [web-quality, go-verify, go-lint]
     if: always()
     runs-on: ubuntu-latest
     steps:

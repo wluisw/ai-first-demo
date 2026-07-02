@@ -26,7 +26,7 @@ func NewHTTPHandler(echoer ports.Echoer, logger *slog.Logger) http.Handler {
 			logger.Error("ws accept failed", slog.Any("err", err))
 			return
 		}
-		defer c.CloseNow()
+		defer func() { _ = c.CloseNow() }()
 
 		ctx := r.Context()
 		for {

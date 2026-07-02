@@ -61,7 +61,8 @@ services/               # Go 后端(单 Go module,hexagonal)
   internal/services/    #   各服务实现(kebab):api / ws,每个含 domain/ports/adapters/app/bootstrap
   internal/shared/      #   跨服务共享:observability(slog)
   Makefile              #   后端本地命令(verify/build/test/fmt/run-api/run-ws)
-docs/                   # 设计文档(本仓内):architecture.md、多模型适配.md、services/<服务>/*
+docs/                   # 设计文档(本仓内):architecture.md、services/<英文可读名>/(api.md/CHANGELOG.md)、standards/、test-cases/(双维度)
+graphify-out/           # 知识图谱(`graphify update .` 生成,纯 AST 无 LLM;GRAPH_REPORT.md 给 agent 读)
 flags/feature-flags.ts  # 特性开关封装(发布安全阀,前端按开关灰度)
 .claude/                # harness(skills 24、agents 10、settings)
 .github/workflows/      # 本仓 CI/CD 与 AI 评审工作流
@@ -72,9 +73,10 @@ Makefile                # 根级委托(services-* / web-*)
 ## Session 开始必读
 
 每次进入项目后,按顺序:
-1. **读本文件** — 确认当前技术栈和命令
-2. **读 agent-coding-discipline** — 写码行为纪律
-3. **按需读 skill** — 根据任务类型,参考下方"规范 skill 强制加载"表
+1. **读 `graphify-out/GRAPH_REPORT.md`**(若存在)— 了解模块社区、依赖热点(~2-5k token,读一次)
+2. **读本文件** — 确认当前技术栈和命令
+3. **读 agent-coding-discipline** — 写码行为纪律
+4. **按需读 skill** — 根据任务类型,参考下方"规范 skill 强制加载"表
 
 ## 本地开发(agent 必须能复现这些命令)
 
@@ -195,13 +197,16 @@ make web-dev / web-build / web-test / web-typecheck / web-lint
 
 | 改动类型 | 必须同步更新 | 对应 skill |
 |---------|------------|-----------|
-| 新增/修改 HTTP/WS 接口 | `docs/services/<服务>/api.md` | `api-doc-output` |
-| 新增/修改数据模型 | `docs/services/<服务>/数据模型.md` | `data-model-output` |
-| 任意功能变更(PR 前) | `docs/services/<服务>/CHANGELOG.md` | `changelog-output` |
+| 新增/修改**可测功能**(后端契约) | `docs/test-cases/<服务kebab>/<feature>.md`(api/ws → 生成 auto-tests) | `test-case-output`(约定) |
+| 改动**影响线上前端流程**(用户可感知) | 连带更新 `docs/test-cases/web/<流程>.md`(前端 e2e) | `test-case-output`(约定) |
+| 新增/修改 HTTP/WS 接口 | `docs/services/<英文可读名>/api.md`(API Service / WS Service) | `api-doc-output` |
+| 新增/修改数据模型 | `docs/services/<英文可读名>/数据模型.md` | `data-model-output` |
+| 任意功能变更(PR 前) | `docs/services/<英文可读名>/CHANGELOG.md` | `changelog-output` |
 | 全局架构演进 | `docs/architecture.md` | — |
 
 **所有相关文档必须在同一 PR 里更新,不允许单独补提。**
-> `<服务>` 用 kebab 名(`api`、`ws`),与 `services/cmd/<服务>`、`services/internal/services/<服务>` 一一对齐。
+> **命名**:`docs/services/` 用**英文可读名**(`API Service`↔`api`、`WS Service`↔`ws`,给人读);`docs/test-cases/` 用 **kebab**(`api`/`ws`,与 `services/cmd/<服务>` 对齐,给工具);二者故意不同。
+> **test-cases 双维度**:`web/<流程>.md`(前端 e2e)+ `<服务kebab>/<feature>.md`(后端契约);后端改动影响用户可感知流程时,勿只更后端契约、漏掉 `web/` 的 e2e。约定详见 `docs/test-cases/README.md`。
 
 ### Sub-agents(`.claude/agents/<name>.toml`)
 角色化的 agent + 模型分层:`explorer`(Haiku)/`implementer`(Sonnet)/`subtask-implementer`(并行子任务)/`merger`(并行整合)/三类 `verifier`(分层)/`triage-scorer`(Sonnet)/`checker`(Sonnet)。**写代码的 agent 不能是判断 done 的 agent;并行子任务不能再递归 spawn 子 agent**。

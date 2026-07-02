@@ -1,0 +1,8 @@
+# graphify-out —— 只入仓「可查询图谱 + 报告」,忽略可再生的重建缓存与大体积可视化。
+# 重新生成:在仓库根跑 `graphify update .`(纯 AST,无需 LLM key,token 成本 0)。
+
+# AST 重建缓存(与 graphify 版本绑定,每次 update 重建)
+cache/
+
+# 交互式可视化(数 MB,可由 graph.json 重新生成;工作流只读 GRAPH_REPORT.md、按需查询 graph.json)
+graph.html

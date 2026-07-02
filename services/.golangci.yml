@@ -1,0 +1,52 @@
+version: "2"
+run:
+  tests: true
+linters:
+  enable:
+    - bodyclose
+    - contextcheck
+    - errcheck
+    - errorlint
+    - gocritic
+    - govet
+    - gosec
+    - ineffassign
+    - misspell
+    - noctx
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+  settings:
+    errcheck:
+      check-type-assertions: true
+    revive:
+      rules:
+        - name: exported
+        - name: context-as-argument
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      # 测试代码放宽:httptest.NewRequest / http.Get / Dial 是标准测试写法,
+      # 不必强制 context 传递、body 关闭、返回值检查。
+      - linters:
+          - gosec
+          - unparam
+          - noctx
+          - bodyclose
+          - errcheck
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
