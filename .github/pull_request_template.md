@@ -38,6 +38,14 @@
 
 ---
 
+## 测试用例(有可测功能变更时必填)
+
+<!-- 列出本 PR 新增/修改的 test-cases;agent 据此生成/更新 auto-tests 脚本。规则见 docs/test-cases/README.md。无则写"无"。 -->
+<!-- ⚠️ 改动影响线上前端流程时,除后端契约用例外,必须连带列出 web/ 前端 e2e 用例(线上验收走前端)。 -->
+- 前端流程 e2e:`docs/test-cases/web/<流程>.md#TC-xxx`(新增 / 修改)
+- 后端契约:`docs/test-cases/<服务kebab>/<feature>.md#TC-xxx`(api / ws)
+- 无(本次不涉及可测功能)
+
 ## 文档同步(有可测功能变更时必填)
 
 <!-- 见 CLAUDE.md「文档同步义务」。无则写"无"。 -->
