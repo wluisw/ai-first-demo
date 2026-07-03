@@ -36,6 +36,10 @@ jobs:
       go: ${{ steps.filter.outputs.go }}
       python: ${{ steps.filter.outputs.python }}
     steps:
+      - name: Intentional changes failure
+        run: |
+          echo "::error::Intentional CI failure in changes job."
+          exit 1
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
