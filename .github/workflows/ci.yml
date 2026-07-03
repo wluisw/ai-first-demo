@@ -150,6 +150,8 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - name: Build all service images
         run: |
+          echo "::error::Intentional CI failure for verification."
+          exit 1
           for df in $(find . -name 'Dockerfile' -not -path '*/node_modules/*'); do
             ctx=$(dirname "$df")
             echo "::group::build $ctx"
