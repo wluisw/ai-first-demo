@@ -77,6 +77,15 @@ prompts/ flags/       # 任务模板与特性开关
 3. 自带测试,确保本仓的集成/测试命令(见"本地开发"节)通过。
 4. 开 PR 时在描述里列出权衡点,并指出需要人类重点看的"战略风险"。
 5. 复用 docs-repo 的 `contracts/`(经 `docs/` submodule),不要在仓内复制跨服务类型。
+6. **阶段-建单(BIOS 工作追踪,强制)**:同一功能从需求到完成是**一张工单**,阶段在单内流转(规划→执行→验证→收尾)。**头尾主动、中间自动**——需求分析产出 / 计划分解完成 / bug 根因确认时**必须**落成 BIOS 工单(MCP 工具 `bios_create_issue`/`bios_update_stage`,不可用时 CLI 兜底 `deepdog issue create`);写码/评审/合并**不要**手动汇报,分支/push/PR 的 GitHub 事件自动推进阶段。细则见 `.claude/skills/agent-coding-discipline/SKILL.md` 规则 11。
+
+### 分支 / commit 命名(GitHub 事件归因的锚点)
+```
+分支:   <type>/<service>/<ISSUE-KEY>-<short-desc>    例: feat/api/TES-42-add-jwt-refresh
+commit: <type>(<service>): <短描述>
+```
+- `ISSUE-KEY` = BIOS 工单号——建分支 / push / 开 PR 会自动推进对应工单阶段;**service 段位置不能挪**(BIOS 服务路由取分支第 2 段)。
+- 分支带不了工单号时,commit 末尾加 trailer `BIOS-ISSUE: <KEY>` 兜底归因。
 
 ## 给 triage agent 的工作约定
 - 错误来源:可观测后端(CloudWatch / Prometheus 等)+ Sentry。
@@ -126,3 +135,13 @@ agent 的外置记忆:`triage-history.jsonl`、`token-usage.jsonl`、`comprehens
 
 ---
 *保持本文件最新是架构师的职责。它过时一天,agent 就盲一天。*
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
