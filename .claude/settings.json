@@ -5,7 +5,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "printf '%s' '[skill-reminder] 按改动内容显式 Read 对应规范 skill：SQL→sql-optimization；外部调用/并发/日志→performance-review；用户输入/鉴权/密钥→secure-coding；金额/交易→financial-numerics；改接口→api-doc-output；改数据模型→data-model-output；新功能→feature-flag-setup；底线→clean-code + testing-standards。涉及才用，不涉及忽略。'"
+            "command": "printf '%s' '[skill-reminder] \u6309\u6539\u52a8\u5185\u5bb9\u663e\u5f0f Read \u5bf9\u5e94\u89c4\u8303 skill\uff1aSQL\u2192sql-optimization\uff1b\u5916\u90e8\u8c03\u7528/\u5e76\u53d1/\u65e5\u5fd7\u2192performance-review\uff1b\u7528\u6237\u8f93\u5165/\u9274\u6743/\u5bc6\u94a5\u2192secure-coding\uff1b\u91d1\u989d/\u4ea4\u6613\u2192financial-numerics\uff1b\u6539\u63a5\u53e3\u2192api-doc-output\uff1b\u6539\u6570\u636e\u6a21\u578b\u2192data-model-output\uff1b\u65b0\u529f\u80fd\u2192feature-flag-setup\uff1b\u5e95\u7ebf\u2192clean-code + testing-standards\u3002\u6d89\u53ca\u624d\u7528\uff0c\u4e0d\u6d89\u53ca\u5ffd\u7565\u3002'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(python3 -c \"import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',d).get('command',''))\" 2>/dev/null || true); case \"$CMD\" in *grep*|*rg\\ *|*ripgrep*|*find\\ *|*fd\\ *|*ack\\ *|*ag\\ *)   [ -f graphify-out/graph.json ] &&   echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"MANDATORY: graphify-out/graph.json exists. You MUST run `graphify query \\\"<question>\\\"` before grepping raw files. Only grep after graphify has oriented you, or to modify/debug specific lines.\"}}'   || true ;; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HIT=$(python3 -c \"import json,sys;d=json.load(sys.stdin);t=d.get('tool_input',d);exts=('.py','.js','.ts','.tsx','.jsx','.astro','.vue','.svelte','.go','.rs','.java','.rb','.c','.h','.cpp','.hpp','.cc','.cs','.kt','.swift','.php','.scala','.lua','.sh','.md','.rst','.txt','.mdx');vals=[str(t.get('file_path') or ''),str(t.get('pattern') or ''),str(t.get('path') or '')];j=' '.join(vals).lower().replace(chr(92),'/');tails=[('.'+x.rsplit('.',1)[-1]) for v in vals if v for x in [v.lower().replace(chr(92),'/').rsplit('/',1)[-1]] if '.' in x];sys.stdout.write('1' if 'graphify-out/' not in j and any(tl in exts for tl in tails) else '')\" 2>/dev/null || true); if [ \"$HIT\" = 1 ] && [ -f graphify-out/graph.json ]; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"MANDATORY: graphify-out/graph.json exists. You MUST run graphify before reading source files. Use: `graphify query \\\"<question>\\\"` (scoped subgraph), `graphify explain \\\"<concept>\\\"`, or `graphify path \\\"<A>\\\" \\\"<B>\\\"`. Only read raw files after graphify has oriented you, or to modify/debug specific lines. This rule applies to subagents too \u2014 include it in every subagent prompt involving code exploration.\"}}'; fi || true"
           }
         ]
       }

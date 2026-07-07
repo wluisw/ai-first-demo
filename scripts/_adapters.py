@@ -462,6 +462,35 @@ class ModelAdapter:
     @staticmethod
     def summarize(prompt: str, model: str | None = None,
                   *, loop: str = "ad-hoc", role: str = "summarizer") -> str:
+        # v2.6: CC 会员 OAuth token 优先。设了 CLAUDE_CODE_OAUTH_TOKEN(或 ANTHROPIC_AUTH_TOKEN)
+        # 就走 Anthropic 原生 Bearer 鉴权,完全不依赖任何云厂商 API key——
+        # 即"用本地 CC 会员额度做 CI",不用付远端 token。
+        oauth = os.getenv("CLAUDE_CODE_OAUTH_TOKEN") or os.getenv("ANTHROPIC_AUTH_TOKEN")
+        if oauth:
+            role_env = f"LLM_MODEL_{role.upper().replace('-', '_')}"
+
+            # oauth 路只走 Anthropic:任何来源的模型值(显式参数 / 角色级 env /
+            # CC_MODEL / LLM_MODEL)只要不是 claude 模型就忽略——避免被遗留的
+            # gpt-* 配置污染(打到 Anthropic 只会 404 → fail-open 静默放行)。
+            def _claude_only(v: str | None) -> str:
+                return v if v and "claude" in v.lower() else ""
+
+            used_model = (
+                _claude_only(model)
+                or _claude_only(os.getenv(role_env))
+                or _claude_only(os.getenv("CC_MODEL"))
+                or _claude_only(os.getenv("LLM_MODEL"))
+                or "claude-sonnet-4-6"
+            )
+            try:
+                return _call_anthropic(prompt, used_model, oauth, loop, role, oauth=True)
+            except Exception as e:
+                record_token_usage(loop=loop, role=role, model=used_model,
+                                   input_tokens=0, output_tokens=0,
+                                   extra={"error": str(e)[:200], "provider": "anthropic",
+                                          "auth": "oauth"})
+                return f"[模型调用失败 provider=anthropic(CC-oauth) model={used_model}:{str(e)[:120]}]"
+
         provider, used_model, base_url = ModelAdapter._resolve(model, role)
         # v2.1: 优先读通用 LLM_API_KEY;若没设,回退到厂商专属 key(向后兼容)
         key = (
@@ -487,9 +516,18 @@ class ModelAdapter:
             return f"[模型调用失败 provider={provider} model={used_model}:{str(e)[:120]}]"
 
 
-def _call_anthropic(prompt: str, model: str, key: str, loop: str, role: str) -> str:
+def _call_anthropic(prompt: str, model: str, key: str, loop: str, role: str,
+                    *, oauth: bool = False) -> str:
     from anthropic import Anthropic
-    client = Anthropic(api_key=key)
+    if oauth:
+        # CC 会员 OAuth token(sk-ant-oat01…)走 Authorization: Bearer + oauth beta header,
+        # 不是 x-api-key。注意:不能同时设 ANTHROPIC_API_KEY,否则 API 会双 header 报 401。
+        client = Anthropic(
+            auth_token=key,
+            default_headers={"anthropic-beta": "oauth-2025-04-20"},
+        )
+    else:
+        client = Anthropic(api_key=key)
     msg = client.messages.create(
         model=model, max_tokens=1200,
         messages=[{"role": "user", "content": prompt}],
@@ -499,7 +537,7 @@ def _call_anthropic(prompt: str, model: str, key: str, loop: str, role: str) -> 
         loop=loop, role=role, model=model,
         input_tokens=getattr(usage, "input_tokens", 0) if usage else 0,
         output_tokens=getattr(usage, "output_tokens", 0) if usage else 0,
-        extra={"provider": "anthropic"},
+        extra={"provider": "anthropic", "auth": "oauth" if oauth else "api_key"},
     )
     return "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
 
